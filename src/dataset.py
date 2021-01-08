@@ -9,7 +9,7 @@ DEFAULT_EXCLUDED_QUESTIONS = {
 
 """
 Extracts data from the given SQuAD dataset json file and splits it into three dataframes: train, val, and test.
-It returns a dictionary containing the three dataframes, indexed with the record id.
+It returns the three dataframes, indexed with the record id.
 """
 def get_dataframes(
         data_path,
@@ -21,11 +21,7 @@ def get_dataframes(
     df = extract_data(data_path, excluded_contexts, excluded_questions)
     train_df, test_df = title_based_split(df, train_test_split)
     train_df, val_df = title_based_split(train_df, train_val_split)
-    return {
-        'train': train_df.set_index(['id']),
-        'val': val_df.set_index(['id']),
-        'test': test_df.set_index(['id'])
-    }
+    return train_df.set_index(['id']), val_df.set_index(['id']), test_df.set_index(['id'])
 
 
 """
