@@ -1,4 +1,6 @@
+import pandas as pd
 from bisect import bisect_left
+from evaluate import normalize_answer
 
 """
 Given a list of strings, representing the tokens, returns a list of the char offsets.
@@ -22,9 +24,28 @@ def compute_boundaries(offsets, start_char, answer_len):
 
 """
 Given the two (token) boundaries, the list of (char) offsets, and the context paragraph that contains the answer,
-it returns the substring identifying the answer itself
+it returns the substring identifying the answer itself.
 """
 def retrieve_answer(start_token, end_token, offsets, context):
     start_char = offsets[start_token]
     end_char = offsets[end_token]
     return context[start_char:end_char].strip()
+
+"""
+Given a dataframe (containing an 'answer' column) and a retrieving function to obtain an answer from each record of the
+dataframe itself, it checks if the real and the retrieved answers are equal and, if not, it appends the answer to a new
+dataframe of wrong answers which is returned.
+"""
+def check_correctness(df, retrieving_procedure):
+    wrong_answers = []
+    for record_id, record in df.iterrows():
+        answer = record['answer']
+        n_answer = normalize_answer(answer)
+        retrieved = retrieving_procedure(record)
+        n_retrieved = normalize_answer(retrieved)
+        if n_answer != n_retrieved:
+            wrong_answers.append((record_id, answer, n_answer, retrieved, n_retrieved))
+    return pd.DataFrame(
+        wrong_answers,
+        columns=['id', 'answer', 'normalized answer', 'retrieved', 'normalzed retrieved']
+    ).set_index(['id'])
