@@ -1,6 +1,7 @@
 from src.dataset import *
 
 if __name__ == '__main__':
-    dfs = get_dataframes('data/training_set.json')
-    for key, val in dfs.items():
-        print(key, len(val))
+    train_df, val_df, test_df = get_dataframes('data/training_set.json')
+    print('train:', len(train_df))
+    print('  val:', len(val_df))
+    print(' test:', len(test_df))
