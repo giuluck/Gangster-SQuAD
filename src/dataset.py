@@ -15,8 +15,8 @@ def get_dataframes(
         data_path,
         excluded_contexts=DEFAULT_EXCLUDED_CONTEXTS,
         excluded_questions=DEFAULT_EXCLUDED_QUESTIONS,
-        train_test_split=0.7,
-        train_val_split=0.7
+        train_test_split=0.75,
+        train_val_split=0.75
 ):
     df = extract_data(data_path, excluded_contexts, excluded_questions)
     train_df, test_df = title_based_split(df, train_test_split)

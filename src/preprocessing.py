@@ -47,5 +47,5 @@ def check_correctness(df, retrieving_procedure):
             wrong_answers.append((record_id, answer, n_answer, retrieved, n_retrieved))
     return pd.DataFrame(
         wrong_answers,
-        columns=['id', 'answer', 'normalized answer', 'retrieved', 'normalzed retrieved']
+        columns=['id', 'answer', 'normalized answer', 'retrieved', 'normalized retrieved']
     ).set_index(['id'])
