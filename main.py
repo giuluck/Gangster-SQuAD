@@ -1,4 +1,4 @@
-from src.dataset import *
+from src.dataframe import *
 
 if __name__ == '__main__':
     train_df, val_df, test_df = get_dataframes('data/training_set.json')

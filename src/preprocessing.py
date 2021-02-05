@@ -1,6 +1,4 @@
-import pandas as pd
 from bisect import bisect_left
-from evaluate import normalize_answer
 
 
 def get_offsets(tokens):
@@ -33,31 +31,3 @@ def retrieve_answer(start_token, end_token, offsets, context):
     start_char = offsets[start_token]
     end_char = offsets[end_token]
     return context[start_char:end_char].strip()
-
-
-def check_correctness(df, retrieving_procedure):
-    """
-    Given a dataframe (containing an 'answer' column) and a retrieving function to obtain an answer from each record of the
-    dataframe itself, it checks if the real and the retrieved answers are equal and, if not, it appends the answer to a new
-    dataframe of wrong answers which is returned.
-    """
-    correct_answers = []
-    wrong_answers = []
-    for record_id, record in df.iterrows():
-        answer = record['answer']
-        n_answer = normalize_answer(answer)
-        retrieved = retrieving_procedure(record)
-        n_retrieved = normalize_answer(retrieved)
-        if n_answer != n_retrieved:
-            wrong_answers.append((record_id, answer, n_answer, retrieved, n_retrieved))
-        else:
-            correct_answers.append((record_id, answer, n_answer, retrieved, n_retrieved))
-    correct_df = pd.DataFrame(
-        correct_answers,
-        columns=['id', 'answer', 'normalized answer', 'retrieved', 'normalized retrieved']
-    ).set_index(['id'])
-    wrong_df = pd.DataFrame(
-        wrong_answers,
-        columns=['id', 'answer', 'normalized answer', 'retrieved', 'normalized retrieved']
-    ).set_index(['id'])
-    return correct_df, wrong_df

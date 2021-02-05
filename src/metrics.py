@@ -1,6 +1,6 @@
 import re
 import pandas as pd
-from preprocessing import check_correctness
+from dataframe import check_correctness
 
 
 def f1_score(answers, preds):
