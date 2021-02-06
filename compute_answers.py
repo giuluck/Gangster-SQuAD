@@ -3,10 +3,12 @@ import sys
 import json
 
 from evaluate import normalize_answer
-from src.dataframe import extract_data
+from src.dataframe import extract_data, process_dataframe
 from src.models import DistilBertWHL
 from src.dataset import SquadDataset
 from torch.utils.data import DataLoader
+from transformers import DistilBertTokenizer
+from tokenizers import BertWordPieceTokenizer
 
 from src.preprocessing import retrieve_answer
 
@@ -14,7 +16,12 @@ if __name__ == '__main__':
     print(f"Reading ${sys.argv[1]}...")
     df = extract_data(sys.argv[1], contain_answers=False)
     print(f"DataFrame created.")
+
     model = DistilBertWHL(alpha=0.66, alpha_step=0.0001)
+    DistilBertTokenizer.from_pretrained(model.info.pretrained_model).save_pretrained('slow_tokenizer/')
+    tokenizer = BertWordPieceTokenizer('slow_tokenizer/vocab.txt', lowercase=True)
+    df = process_dataframe(df, tokenizer)
+
     dataset = SquadDataset(df, model.info)
     loader = DataLoader(dataset, batch_size=16, num_workers=4, pin_memory=True)
 
