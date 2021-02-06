@@ -1,11 +1,11 @@
 import torch
 from torch import nn
-from distilbert_base import DistilBertBase
+from distilbert_base import DistilBertBase, ModelInfo
 
 
 class DistilBertCNN(DistilBertBase):
-    def __init__(self, alpha=0.5, alpha_step=0):
-        super(DistilBertCNN, self).__init__(alpha, alpha_step)
+    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.5, alpha_step=0):
+        super(DistilBertCNN, self).__init__(model_info, alpha, alpha_step)
         self.conv = nn.Conv2d(in_channels=self.info.embedding_dim, out_channels=self.info.embedding_dim,
                               kernel_size=(1, 2), stride=(1, 4))
 

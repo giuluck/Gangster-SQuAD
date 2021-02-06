@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from distilbert_base import DistilBertBase
+from distilbert_base import DistilBertBase, ModelInfo
 
 
 class Highway(nn.Module):
@@ -26,8 +26,8 @@ class DistilBertWHL(DistilBertBase):
     """
     https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1194/reports/default/15737384.pdf
     """
-    def __init__(self, k=4, alpha=0.5, alpha_step=0, highway=False):
-        super(DistilBertWHL, self).__init__(alpha, alpha_step)
+    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.5, alpha_step=0, k=4, highway=False):
+        super(DistilBertWHL, self).__init__(model_info, alpha, alpha_step)
         self.k = k
         self.highway = highway
         if highway:
