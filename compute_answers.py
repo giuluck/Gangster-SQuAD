@@ -13,21 +13,28 @@ from tokenizers import BertWordPieceTokenizer
 from src.preprocessing import retrieve_answer
 
 if __name__ == '__main__':
+    if torch.cuda.is_available():
+        device = 'cuda'
+    else:
+        device = 'cpu'
+
     print(f"Reading ${sys.argv[1]}...")
     df = extract_data(sys.argv[1], contain_answers=False)
     print(f"DataFrame created.")
 
+    print("Tokenizing the DataFrame...")
     model = DistilBertWHL(alpha=0.66, alpha_step=0.0001)
     DistilBertTokenizer.from_pretrained(model.info.pretrained_model).save_pretrained('slow_tokenizer/')
     tokenizer = BertWordPieceTokenizer('slow_tokenizer/vocab.txt', lowercase=True)
     df = process_dataframe(df, tokenizer)
+    print("Tokenization complete.")
 
     dataset = SquadDataset(df, model.info)
     loader = DataLoader(dataset, batch_size=16, num_workers=4, pin_memory=True)
 
-    print("Loading model...")
+    print("Loading model weights...")
     model.load_state_dict(torch.load('model.pt'))
-    model = model.cuda()
+    model = model.to(device)
     print("Model loaded.")
 
     model.eval()
@@ -38,27 +45,20 @@ if __name__ == '__main__':
         if (idx + 1) % 100 == 0:
             print(f'Batch {idx + 1:{len(str(num_batches))}}/{num_batches}')
         with torch.no_grad():
-            s, e = model(input.cuda())
+            s, e = model(input.to(device))
         starts.append(s)
         ends.append(e)
     print("Evaluation completed.")
 
     df['pred_start'] = [s.item() for ss in starts for s in ss]
     df['pred_end'] = [e.item() for ee in ends for e in ee]
-    # When the prediction (for both 'start' and 'end') points to a padding character
-    # then it is placed at the last offset
-    df['length_offsets'] = df['offsets'].apply(lambda x: len(x))
-    df['pred_start'] = (df['pred_start'] < df['length_offsets']) * df['pred_start'] + (
-                df['pred_start'] >= df['length_offsets']) * (df['length_offsets'] - 1)
-    df['pred_end'] = (df['pred_end'] < df['length_offsets']) * df['pred_end'] + (
-                df['pred_end'] >= df['length_offsets']) * (df['length_offsets'] - 1)
 
     print("Retrieving prediction...")
-    predictions = []
+    predictions = {}
     for record_id, record in df.iterrows():
         retrieved = retrieve_answer(df['pred_start'], df['pred_end'], df['offsets'], df['context'])
         n_retrieved = normalize_answer(retrieved)
-        predictions.append({record_id: n_retrieved})
+        predictions[record_id] = n_retrieved
     print("Finish retrieving.")
 
     with open('prediction.json', 'w') as f:
