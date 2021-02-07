@@ -24,10 +24,8 @@ if __name__ == '__main__':
     print(f"Using {device}.")
 
     print(f"Reading {sys.argv[1]}...")
-    df = extract_data(sys.argv[1], contain_answers=False)
+    df = extract_data(sys.argv[1], contain_answers=False).set_index(['id'])
     print(f"DataFrame created.")
-
-    print(df.head())
 
     print("Tokenizing the DataFrame...")
     model = DistilBertBase()
@@ -36,7 +34,7 @@ if __name__ == '__main__':
     df = process_dataframe(df, tokenizer, contain_answers=False)
     print("Tokenization complete.")
 
-    dataset = SquadDataset(df, model.info)
+    dataset = SquadDataset(df, model.info, contain_answers=False)
     loader = DataLoader(dataset, batch_size=16, num_workers=4, pin_memory=True)
 
     print("Loading model weights...")
@@ -63,10 +61,10 @@ if __name__ == '__main__':
     print("Retrieving prediction...")
     predictions = {}
     for record_id, record in df.iterrows():
-        retrieved = retrieve_answer(df['pred_start'], df['pred_end'], df['offsets'], df['context'])
+        retrieved = retrieve_answer(record['pred_start'], record['pred_end'], record['offsets'], record['context'])
         n_retrieved = normalize_answer(retrieved)
         predictions[record_id] = n_retrieved
     print("Finish retrieving.")
 
-    with open('prediction.json', 'w') as f:
+    with open('predictions.json', 'w') as f:
         json.dump(predictions, f)
