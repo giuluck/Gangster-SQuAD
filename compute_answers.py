@@ -1,16 +1,19 @@
 import torch
 import sys
 import json
-
-from evaluate import normalize_answer
-from src.dataframe import extract_data, process_dataframe
-from src.models import DistilBertWHL
-from src.dataset import SquadDataset
 from torch.utils.data import DataLoader
 from transformers import DistilBertTokenizer
 from tokenizers import BertWordPieceTokenizer
 
-from src.preprocessing import retrieve_answer
+sys.path.append('src')
+sys.path.append('src/models')
+
+from evaluate import normalize_answer
+from dataframe import extract_data, process_dataframe
+from models import DistilBertBase
+from dataset import SquadDataset
+from preprocessing import retrieve_answer
+
 
 if __name__ == '__main__':
     if torch.cuda.is_available():
@@ -18,12 +21,16 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
 
-    print(f"Reading ${sys.argv[1]}...")
+    print(f"Using {device}.")
+
+    print(f"Reading {sys.argv[1]}...")
     df = extract_data(sys.argv[1], contain_answers=False)
     print(f"DataFrame created.")
 
+    print(df.head())
+
     print("Tokenizing the DataFrame...")
-    model = DistilBertWHL(alpha=0.66, alpha_step=0.0001)
+    model = DistilBertBase()
     DistilBertTokenizer.from_pretrained(model.info.pretrained_model).save_pretrained('slow_tokenizer/')
     tokenizer = BertWordPieceTokenizer('slow_tokenizer/vocab.txt', lowercase=True)
     df = process_dataframe(df, tokenizer)
