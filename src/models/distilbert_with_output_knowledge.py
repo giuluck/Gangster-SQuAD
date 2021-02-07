@@ -1,26 +1,10 @@
 import torch
-from torch import nn
-from transformers import DistilBertModel
-import pytorch_lightning as pl
-from distilbert_base import ModelInfo
+from distilbert_base import ModelInfo, DistilBertBase
 
 
-class DistilBertWithOutputKnowledge(pl.LightningModule):
-    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.75):
-        super().__init__()
-        self.alpha = alpha
-        self.encoder = DistilBertModel.from_pretrained(model_info.pretrained_model)
-        self.start_fc = nn.Linear(model_info.embedding_dim, 1)
-        self.end_fc = nn.Linear(model_info.embedding_dim, 1)
-        self.criterion = nn.CrossEntropyLoss()
-        self.info = model_info
-
-    def _logits(self, x):
-        x = self.encoder(input_ids=x[:, 0], attention_mask=x[:, 1])
-        x = x["last_hidden_state"]
-        start = self.start_fc(x).squeeze(dim=2)
-        end = self.end_fc(x).squeeze(dim=2)
-        return start, end
+class DistilBertWithOutputKnowledge(DistilBertBase):
+    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.75, alpha_step=0):
+        super(DistilBertWithOutputKnowledge, self).__init__(model_info, alpha, alpha_step)
 
     def forward(self, x):
         # retrieve logits
@@ -41,17 +25,3 @@ class DistilBertWithOutputKnowledge(pl.LightningModule):
         # retrieve end indices and clip to maximal length
         _, end_indices = end.max(dim=1)
         return start_indices, end_indices
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-        pred_start, pred_end = self._logits(x)
-        loss_start = self.criterion(pred_start, y[:, 0])
-        loss_end = self.criterion(pred_end, y[:, 1])
-        self.log('loss_start', loss_start, prog_bar=True)
-        self.log('loss_end', loss_end, prog_bar=True)
-        loss = self.alpha * loss_start + (1 - self.alpha) * loss_end
-        return loss
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-5)
-        return optimizer

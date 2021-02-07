@@ -27,7 +27,6 @@ class DistilBertBase(pl.LightningModule):
 
         # W&B save hyperparameters
         self.save_hyperparameters({"criterion": self.criterion.__str__()})
-        self.save_hyperparameters()
 
     def _logits(self, x):
         x = self.encoder(input_ids=x[:, 0], attention_mask=x[:, 1])

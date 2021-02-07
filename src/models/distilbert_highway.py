@@ -1,7 +1,8 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from distilbert_base import DistilBertBase, ModelInfo
+from distilbert_base import ModelInfo
+from models import DistilBertWithOutputKnowledge
 
 
 class Highway(nn.Module):
@@ -22,7 +23,7 @@ class Highway(nn.Module):
         return x
 
 
-class DistilBertWHL(DistilBertBase):
+class DistilBertWHL(DistilBertWithOutputKnowledge):
     """
     https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1194/reports/default/15737384.pdf
     """
@@ -38,7 +39,7 @@ class DistilBertWHL(DistilBertBase):
         x = self.encoder(input_ids=x[:, 0], attention_mask=x[:, 1], output_hidden_states=True)
         x_hidden_states = x["hidden_states"]
         x = torch.stack([x_hidden_state for x_hidden_state in x_hidden_states[-self.k:]], dim=3)
-        x = x.flatten(start_dim=2, end_dim=3)
+        x = torch.flatten(x, start_dim=2, end_dim=3)
         if self.highway:
             x = self.highway(x)
         x = self.dot_prod_attention(x)
