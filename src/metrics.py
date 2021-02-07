@@ -1,5 +1,6 @@
 import re
 import pandas as pd
+import torch
 from pytorch_lightning import Callback
 from torch.utils.data import DataLoader
 
@@ -71,7 +72,8 @@ class MetricsCallback(Callback):
         pl_module.log(f'{name}/f1_score', f1)
 
     def on_train_epoch_end(self, trainer, pl_module, outputs):
-        self._log_metrics('train', pl_module, self.train_df, self.train_dl)
-
-    def on_validation_epoch_end(self, trainer, pl_module):
-        self._log_metrics('val', pl_module, self.val_df, self.val_dl)
+        pl_module.eval()
+        with torch.no_grad():
+            self._log_metrics('train', pl_module, self.train_df, self.train_dl)
+            self._log_metrics('val', pl_module, self.val_df, self.val_dl)
+        pl_module.train()
