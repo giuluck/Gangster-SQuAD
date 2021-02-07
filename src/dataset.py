@@ -3,11 +3,12 @@ from torch.utils.data import Dataset
 
 
 class SquadDataset(Dataset):
-    def __init__(self, dataframe, model_info):
+    def __init__(self, dataframe, model_info, contain_answers=True):
         self.dataframe = dataframe
         self.max_len = model_info.max_length
         self.cls_tok = model_info.cls_token
         self.sep_tok = model_info.sep_token
+        self.contain_answers = contain_answers
 
     def __getitem__(self, index):
         rec = self.dataframe.iloc[index]
@@ -24,9 +25,12 @@ class SquadDataset(Dataset):
         # the input tensor is padded to length 512
         pad_tensor = torch.zeros((2, self.max_len - len_ids), dtype=torch.long)
         input_tensor = torch.cat((input_tensor, pad_tensor), dim=1)
-        # an output tensor containing the two outputs is created as well
-        output_tensor = torch.tensor([rec['start token'], rec['end token']])
-        return input_tensor, output_tensor
+        if self.contain_answers:
+            # an output tensor containing the two outputs is created as well
+            output_tensor = torch.tensor([rec['start token'], rec['end token']])
+            return input_tensor, output_tensor
+        else:
+            return input_tensor
 
     def __len__(self):
         return len(self.dataframe)

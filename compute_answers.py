@@ -48,7 +48,7 @@ if __name__ == '__main__':
     print("Starting evaluation...")
     starts, ends = [], []
     num_batches = len(loader)
-    for idx, (input, _) in enumerate(loader):
+    for idx, input in enumerate(loader):
         if (idx + 1) % 100 == 0:
             print(f'Batch {idx + 1:{len(str(num_batches))}}/{num_batches}')
         with torch.no_grad():
