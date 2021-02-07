@@ -58,7 +58,7 @@ class MetricsCallback(Callback):
         starts = []
         ends = []
         for input, _ in loader:
-            s, e = pl_module(input)
+            s, e = pl_module(input.to(pl_module.device))
             starts.append(s)
             ends.append(e)
         df['pred_start'] = [s.item() for ss in starts for s in ss]
