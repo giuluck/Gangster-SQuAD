@@ -33,7 +33,7 @@ if __name__ == '__main__':
     model = DistilBertBase()
     DistilBertTokenizer.from_pretrained(model.info.pretrained_model).save_pretrained('slow_tokenizer/')
     tokenizer = BertWordPieceTokenizer('slow_tokenizer/vocab.txt', lowercase=True)
-    df = process_dataframe(df, tokenizer)
+    df = process_dataframe(df, tokenizer, contain_answers=False)
     print("Tokenization complete.")
 
     dataset = SquadDataset(df, model.info)

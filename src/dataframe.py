@@ -51,7 +51,12 @@ def extract_data(data_path,
     return pd.DataFrame(samples, columns=columns)
 
 
-def process_dataframe(df, tokenizer):
+def process_dataframe(df, tokenizer, contain_answers=True):
+    if contain_answers:
+        columns = ['id', 'ctx_ids', 'qst_ids', 'start token', 'end token', 'offsets']
+    else:
+        columns = ['id', 'ctx_ids', 'qst_ids', 'offsets']
+
     def process_record(record):
         # both context and question gets tokenized
         ctx_tokens = tokenizer.encode(record['context'])
@@ -60,14 +65,17 @@ def process_dataframe(df, tokenizer):
         qst_ids = qst_tokens.ids[1:-1]                       # [CLS] and [SEP] tokens are discarded
         # take all the context start chars then add a final index for the last character
         offsets = [s for s, _ in ctx_tokens.offsets[:-1]] + [len(record['context'])]
-        # token boundaries to be used during training are computed
-        start_token, end_token = compute_boundaries(offsets, record['start'], len(record['answer']))
-        # input, output and utility data are returned to form the dataset
-        return [ctx_ids, qst_ids, start_token, end_token, offsets]
+        if contain_answers:
+            # token boundaries to be used during training are computed
+            start_token, end_token = compute_boundaries(offsets, record['start'], len(record['answer']))
+            # input, output and utility data are returned to form the dataset
+            return [ctx_ids, qst_ids, start_token, end_token, offsets]
+        else:
+            return [ctx_ids, qst_ids, offsets]
 
     processed_df = pd.DataFrame(
         [[id] + process_record(record) for id, record in df.iterrows()],
-        columns=['id', 'ctx_ids', 'qst_ids', 'start token', 'end token', 'offsets']
+        columns=columns
     ).set_index(['id'])
     return processed_df.join(df)
 
