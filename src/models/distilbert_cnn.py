@@ -5,7 +5,7 @@ from models import DistilBertWithOutputKnowledge
 
 
 class DistilBertCNN(DistilBertWithOutputKnowledge):
-    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.5, alpha_step=0):
+    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.75, alpha_step=0):
         super(DistilBertCNN, self).__init__(model_info, alpha, alpha_step)
         self.conv = nn.Conv2d(in_channels=self.info.embedding_dim, out_channels=self.info.embedding_dim,
                               kernel_size=(1, 2), stride=(1, 4))

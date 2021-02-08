@@ -27,7 +27,7 @@ class DistilBertWHL(DistilBertWithOutputKnowledge):
     """
     https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1194/reports/default/15737384.pdf
     """
-    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.5, alpha_step=0, k=4, highway=False):
+    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.75, alpha_step=0, k=4, highway=False):
         super(DistilBertWHL, self).__init__(model_info, alpha, alpha_step)
         self.k = k
         self.highway = highway

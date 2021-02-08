@@ -18,12 +18,15 @@ def f1_score(answers, preds):
     preds = preds.apply(lambda s: s.split())
     scores = []
     for ans, pred in zip(answers, preds):
-        intersection = [word for word in pred if word in ans]
-        same = len(intersection)
-        precision = 1.0 * same / len(pred)
-        recall = 1.0 * same / len(ans)
-        f1 = (2 * precision * recall) / (precision + recall)
-        scores.append(f1)
+        if len(pred) == 0 or len(ans) == 0:
+            scores.append(1 if len(ans) == len(pred) else 0)
+        else:
+            intersection = [word for word in pred if word in ans]
+            same = len(intersection)
+            precision = 1.0 * same / len(pred)
+            recall = 1.0 * same / len(ans)
+            f1 = (2 * precision * recall) / (precision + recall)
+            scores.append(f1)
     return np.mean(scores).item()
 
 
