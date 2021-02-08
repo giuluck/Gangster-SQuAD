@@ -23,10 +23,13 @@ def f1_score(answers, preds):
         else:
             intersection = [word for word in pred if word in ans]
             same = len(intersection)
-            precision = 1.0 * same / len(pred)
-            recall = 1.0 * same / len(ans)
-            f1 = (2 * precision * recall) / (precision + recall)
-            scores.append(f1)
+            if same == 0:
+                scores.append(0)
+            else:
+                precision = 1.0 * same / len(pred)
+                recall = 1.0 * same / len(ans)
+                f1 = (2 * precision * recall) / (precision + recall)
+                scores.append(f1)
     return np.mean(scores).item()
 
 
