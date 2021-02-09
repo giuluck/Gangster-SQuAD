@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 from transformers import DistilBertModel
 import pytorch_lightning as pl
 
@@ -13,8 +14,24 @@ class ModelInfo:
         self.sep_token = sep_token
 
 
+class Highway(nn.Module):
+    def __init__(self, in_size, n_layers=1, act=F.relu):
+        super(Highway, self).__init__()
+        self.n_layers = n_layers
+        self.act = act
+        self.normal_layer = nn.ModuleList([nn.Linear(in_size, in_size) for _ in range(n_layers)])
+        self.gate_layer = nn.ModuleList([nn.Linear(in_size, in_size) for _ in range(n_layers)])
+
+    def forward(self, x):
+        for i in range(self.n_layers):
+            normal_layer_ret = self.act(self.normal_layer[i](x))
+            gate = torch.sigmoid(self.gate_layer[i](x))
+            x = torch.add(torch.mul(normal_layer_ret, gate), torch.mul((1.0 - gate), x))
+        return x
+
+
 class DistilBertBase(pl.LightningModule):
-    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.5, alpha_step=0):
+    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.5, alpha_step=0, highway=False):
         super().__init__()
         # Define layers and loss function
         self.alpha = alpha
@@ -24,13 +41,15 @@ class DistilBertBase(pl.LightningModule):
         self.end_fc = nn.Linear(model_info.embedding_dim, 1)
         self.criterion = nn.CrossEntropyLoss()
         self.info = model_info
-
+        self.highway = Highway(in_size=self.info.embedding_dim) if highway else False
         # W&B save hyperparameters
         self.save_hyperparameters({"criterion": self.criterion.__str__()})
 
     def _logits(self, x):
         x = self.encoder(input_ids=x[:, 0], attention_mask=x[:, 1])
         x = x["last_hidden_state"]
+        if self.highway:
+            x = self.highway(x)
         start = self.start_fc(x).squeeze(dim=2)
         end = self.end_fc(x).squeeze(dim=2)
         return start, end

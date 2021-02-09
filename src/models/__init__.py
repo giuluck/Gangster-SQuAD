@@ -1,4 +1,4 @@
-from distilbert_base import DistilBertBase, ModelInfo
-from distilbert_with_output_knowledge import DistilBertWithOutputKnowledge
-from distilbert_highway import DistilBertWHL
+from distilbert_base import DistilBertBase, ModelInfo, Highway
+from distilbert_knowledge import DistilBertKnowledge
+from distilbert_whl import DistilBertWHL
 from distilbert_cnn import DistilBertCNN

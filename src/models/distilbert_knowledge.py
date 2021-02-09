@@ -1,10 +1,11 @@
 import torch
 from distilbert_base import ModelInfo, DistilBertBase
+from models import Highway
 
 
-class DistilBertWithOutputKnowledge(DistilBertBase):
-    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.75, alpha_step=0):
-        super(DistilBertWithOutputKnowledge, self).__init__(model_info, alpha, alpha_step)
+class DistilBertKnowledge(DistilBertBase):
+    def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.75, alpha_step=0, highway=False):
+        super(DistilBertKnowledge, self).__init__(model_info, alpha, alpha_step, highway)
 
     def forward(self, x):
         # retrieve logits

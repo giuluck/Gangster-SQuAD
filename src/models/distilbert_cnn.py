@@ -1,10 +1,10 @@
 import torch
 from torch import nn
 from distilbert_base import ModelInfo
-from models import DistilBertWithOutputKnowledge
+from models import DistilBertKnowledge
 
 
-class DistilBertCNN(DistilBertWithOutputKnowledge):
+class DistilBertCNN(DistilBertKnowledge):
     def __init__(self, model_info=ModelInfo('distilbert-base-uncased'), alpha=0.75, alpha_step=0):
         super(DistilBertCNN, self).__init__(model_info, alpha, alpha_step)
         self.conv = nn.Conv1d(in_channels=self.info.embedding_dim, out_channels=self.info.embedding_dim, kernel_size=2)
