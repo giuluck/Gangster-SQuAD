@@ -63,9 +63,6 @@ if __name__ == '__main__':
     df['pred_start'] = [s.item() for ss in starts for s in ss]
     df['pred_end'] = [e.item() for ee in ends for e in ee]
 
-    exact_match, f1_score = compute_metrics(df, retrieving_procedure)
-    print(f"EM: {exact_match}\nF1: {f1_score}")
-
     print("Retrieving predictions...")
     predictions = {}
     for record_id, record in df.iterrows():
