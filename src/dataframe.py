@@ -101,7 +101,7 @@ def title_based_split(df, split_val):
     and makes sure that the two dataframes do not share any 'title' attribute.
     """
     # retrieve split title and get the minimum id with that title
-    split_title = df['title'].iloc[int(split_val * len(df))]
+    split_title = df['title'].iloc[int(split_val * len(df)) - 1]
     split_index = df[df['title'] == split_title].index.min()
     return df.iloc[:split_index], df.iloc[split_index:]
 
