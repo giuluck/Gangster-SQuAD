@@ -11,8 +11,13 @@ sys.path.append('src/models')
 from evaluate import normalize_answer
 from dataframe import extract_data, process_dataframe
 from models import DistilBertBase
+from metrics import compute_metrics
 from dataset import SquadDataset
 from preprocessing import retrieve_answer
+
+
+def retrieving_procedure(rec):
+    return retrieve_answer(rec['pred_start'], rec['pred_end'], rec['offsets'], rec['context'])
 
 
 if __name__ == '__main__':
@@ -58,10 +63,13 @@ if __name__ == '__main__':
     df['pred_start'] = [s.item() for ss in starts for s in ss]
     df['pred_end'] = [e.item() for ee in ends for e in ee]
 
-    print("Retrieving prediction...")
+    exact_match, f1_score = compute_metrics(df, retrieving_procedure)
+    print(f"EM: {exact_match}\nF1: {f1_score}")
+
+    print("Retrieving predictions...")
     predictions = {}
     for record_id, record in df.iterrows():
-        retrieved = retrieve_answer(record['pred_start'], record['pred_end'], record['offsets'], record['context'])
+        retrieved = retrieving_procedure(record)
         n_retrieved = normalize_answer(retrieved)
         predictions[record_id] = n_retrieved
     print("Finish retrieving.")
