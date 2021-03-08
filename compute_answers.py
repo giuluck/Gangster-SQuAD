@@ -10,7 +10,7 @@ sys.path.append('src/models')
 
 from evaluate import normalize_answer
 from dataframe import extract_data, process_dataframe
-from models import DistilBertWHL
+from models import DistilBertKnowledge
 from dataset import SquadDataset
 from preprocessing import retrieve_answer
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     print(f"DataFrame created.")
 
     print("Tokenizing the DataFrame...")
-    model = DistilBertWHL(highway=True, alpha=0.5)
+    model = DistilBertKnowledge(alpha=0.5)
     DistilBertTokenizer.from_pretrained(model.info.pretrained_model).save_pretrained('slow_tokenizer/')
     tokenizer = BertWordPieceTokenizer('slow_tokenizer/vocab.txt', lowercase=True)
     df = process_dataframe(df, tokenizer, contain_answers=False)
